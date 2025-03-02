@@ -9,10 +9,14 @@
 <body>
     <div class="container">
         <h1>Bienvenido, <span id="nombreUsuario"></span></h1>
+        <input type="text" id="nombreInput" placeholder="Ingrese su nombre">
+        <button id="guardarNombre">Guardar Nombre</button>
         <p>Saldo actual: <strong id="saldo"></strong></p>
         <input type="number" id="monto" placeholder="Ingrese monto">
         <button id="depositar">Depositar</button>
-        <button id="retirar">Retirar</button>
+        <button id="retirar" disabled>Retirar</button>
+        <button id="verSaldo">Ver Saldo</button>
+        <p id="mensaje" class="mensaje"></p>
     </div>
     <script src="js/script.js"></script>
 </body>

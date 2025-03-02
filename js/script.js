@@ -2,24 +2,48 @@
 
 // Obtener elementos del DOM
 const nombreSpan = document.getElementById("nombreUsuario");
+const nombreInput = document.getElementById("nombreInput");
+const btnGuardarNombre = document.getElementById("guardarNombre");
 const saldoSpan = document.getElementById("saldo");
 const inputMonto = document.getElementById("monto");
 const btnDepositar = document.getElementById("depositar");
 const btnRetirar = document.getElementById("retirar");
+const mensaje = document.getElementById("mensaje");
 
-// Obtener saldo desde localStorage o establecer valor inicial
+// Obtener saldo y nombre desde localStorage o establecer valores iniciales
 let saldo = parseFloat(localStorage.getItem("saldo")) || 1000;
-const nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
+let nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
 
 // Mostrar datos en pantalla
 nombreSpan.textContent = nombreUsuario;
-saldoSpan.textContent = `$${saldo.toFixed(2)}`;
+nombreInput.value = nombreUsuario;
+actualizarSaldo();
 
 // Función para actualizar saldo en pantalla y localStorage
 function actualizarSaldo() {
     saldoSpan.textContent = `$${saldo.toFixed(2)}`;
     localStorage.setItem("saldo", saldo);
+    btnRetirar.disabled = saldo === 0;
 }
+
+// Función para mostrar mensajes en pantalla
+function mostrarMensaje(texto, tipo) {
+    mensaje.textContent = texto;
+    mensaje.style.color = tipo === "error" ? "red" : "green";
+    setTimeout(() => mensaje.textContent = "", 3000);
+}
+
+// Guardar el nombre del usuario
+btnGuardarNombre.addEventListener("click", () => {
+    nombreUsuario = nombreInput.value.trim();
+    if (nombreUsuario) {
+        localStorage.setItem("nombreUsuario", nombreUsuario);
+        nombreSpan.textContent = nombreUsuario;
+        mostrarMensaje("Nombre guardado con éxito", "success");
+    } else {
+        mostrarMensaje("Ingrese un nombre válido.", "error");
+    }
+});
 
 // Evento para depositar dinero
 btnDepositar.addEventListener("click", () => {
@@ -27,9 +51,10 @@ btnDepositar.addEventListener("click", () => {
     if (!isNaN(monto) && monto > 0) {
         saldo += monto;
         actualizarSaldo();
+        mostrarMensaje(`Depósito de $${monto.toFixed(2)} realizado con éxito`, "success");
         inputMonto.value = "";
     } else {
-        alert("Ingrese un monto válido.");
+        mostrarMensaje("Ingrese un monto válido.", "error");
     }
 });
 
@@ -39,8 +64,9 @@ btnRetirar.addEventListener("click", () => {
     if (!isNaN(monto) && monto > 0 && monto <= saldo) {
         saldo -= monto;
         actualizarSaldo();
+        mostrarMensaje(`Retiro de $${monto.toFixed(2)} realizado con éxito`, "success");
         inputMonto.value = "";
     } else {
-        alert("Monto no válido o saldo insuficiente.");
+        mostrarMensaje("Monto no válido o saldo insuficiente.", "error");
     }
 });

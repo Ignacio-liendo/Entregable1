@@ -1,4 +1,3 @@
-/* Archivo: styles.css */
 body {
     font-family: Arial, sans-serif;
     text-align: center;
@@ -34,4 +33,20 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+button:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+.mensaje {
+    font-size: 14px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+#nombreInput {
+    display: block;
+    margin: 10px auto;
 }
