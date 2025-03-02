@@ -1,58 +1,46 @@
+// Archivo: script.js
 
-// Variables y constantes
-const nombreUsuario = prompt("Ingrese su nombre:");
-let saldo = 0;
+// Obtener elementos del DOM
+const nombreSpan = document.getElementById("nombreUsuario");
+const saldoSpan = document.getElementById("saldo");
+const inputMonto = document.getElementById("monto");
+const btnDepositar = document.getElementById("depositar");
+const btnRetirar = document.getElementById("retirar");
 
-// Función para mostrar el saldo
-function mostrarSaldo() {
-    alert(`${nombreUsuario}, tu saldo actual es: $${saldo}`);
+// Obtener saldo desde localStorage o establecer valor inicial
+let saldo = parseFloat(localStorage.getItem("saldo")) || 1000;
+const nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
+
+// Mostrar datos en pantalla
+nombreSpan.textContent = nombreUsuario;
+saldoSpan.textContent = `$${saldo.toFixed(2)}`;
+
+// Función para actualizar saldo en pantalla y localStorage
+function actualizarSaldo() {
+    saldoSpan.textContent = `$${saldo.toFixed(2)}`;
+    localStorage.setItem("saldo", saldo);
 }
 
-// Función para depositar dinero
-function depositar() {
-    let monto = parseFloat(prompt("Ingrese el monto a depositar:"));
+// Evento para depositar dinero
+btnDepositar.addEventListener("click", () => {
+    let monto = parseFloat(inputMonto.value);
     if (!isNaN(monto) && monto > 0) {
         saldo += monto;
-        alert(`Depósito exitoso. Nuevo saldo: $${saldo}`);
+        actualizarSaldo();
+        inputMonto.value = "";
     } else {
-        alert("Monto no válido. Intente de nuevo.");
+        alert("Ingrese un monto válido.");
     }
-}
+});
 
-// Función para retirar dinero
-function retirar() {
-    let monto = parseFloat(prompt("Ingrese el monto a retirar:"));
+// Evento para retirar dinero
+btnRetirar.addEventListener("click", () => {
+    let monto = parseFloat(inputMonto.value);
     if (!isNaN(monto) && monto > 0 && monto <= saldo) {
         saldo -= monto;
-        alert(`Retiro exitoso. Nuevo saldo: $${saldo}`);
+        actualizarSaldo();
+        inputMonto.value = "";
     } else {
         alert("Monto no válido o saldo insuficiente.");
     }
-}
-
-// Menú de opciones
-function menu() {
-    let opcion;
-    do {
-        opcion = prompt("Seleccione una opción:\n1. Ver saldo\n2. Depositar\n3. Retirar\n4. Salir");
-        switch (opcion) {
-            case "1":
-                mostrarSaldo();
-                break;
-            case "2":
-                depositar();
-                break;
-            case "3":
-                retirar();
-                break;
-            case "4":
-                alert("Gracias por usar el simulador.");
-                break;
-            default:
-                alert("Opción no válida.");
-        }
-    } while (opcion !== "4");
-}
-
-// Iniciar simulador
-menu();
+});
