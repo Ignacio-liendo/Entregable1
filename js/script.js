@@ -11,7 +11,7 @@ const btnRetirar = document.getElementById("retirar");
 const mensaje = document.getElementById("mensaje");
 
 // Obtener saldo y nombre desde localStorage o establecer valores iniciales
-let saldo = parseFloat(localStorage.getItem("saldo")) || 1000;
+let saldo = Number(localStorage.getItem("saldo")) || 1000;
 let nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
 
 // Mostrar datos en pantalla
@@ -19,11 +19,18 @@ nombreSpan.textContent = nombreUsuario;
 nombreInput.value = nombreUsuario;
 actualizarSaldo();
 
+// Función para guardar datos en localStorage
+function guardarEnLocalStorage() {
+    localStorage.setItem("saldo", saldo.toFixed(2));
+    localStorage.setItem("nombreUsuario", nombreUsuario);
+}
+
 // Función para actualizar saldo en pantalla y localStorage
 function actualizarSaldo() {
-    saldoSpan.textContent = `$${saldo.toFixed(2)}`;
-    localStorage.setItem("saldo", saldo);
-    btnRetirar.disabled = saldo === 0;
+    saldo = Number(saldo.toFixed(2));
+    saldoSpan.textContent = `$${saldo}`;
+    btnRetirar.disabled = saldo <= 0;
+    guardarEnLocalStorage();
 }
 
 // Función para mostrar mensajes en pantalla
@@ -37,8 +44,8 @@ function mostrarMensaje(texto, tipo) {
 btnGuardarNombre.addEventListener("click", () => {
     nombreUsuario = nombreInput.value.trim();
     if (nombreUsuario) {
-        localStorage.setItem("nombreUsuario", nombreUsuario);
         nombreSpan.textContent = nombreUsuario;
+        guardarEnLocalStorage();
         mostrarMensaje("Nombre guardado con éxito", "success");
     } else {
         mostrarMensaje("Ingrese un nombre válido.", "error");
