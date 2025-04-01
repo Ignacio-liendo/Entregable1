@@ -6,6 +6,7 @@
     <title>Simulador Bancario</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -16,8 +17,33 @@
         <input type="number" id="monto" placeholder="Ingrese monto">
         <button id="depositar">Depositar</button>
         <button id="retirar" disabled>Retirar</button>
-        <p id="mensaje" class="mensaje"></p>
     </div>
+
+    <!-- Contenedor del gráfico -->
+    <div class="chart-container">
+        <canvas id="saldoChart"></canvas>
+    </div>
+    
+    <!-- Historial de transacciones -->
+    <div class="container">
+        <h2>Historial de Transacciones</h2>
+        <div class="tabla-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody id="historialTransacciones"></tbody>
+            </table>
+        </div>
+        <button id="limpiarHistorial">Limpiar Historial</button>
+        <button id="limpiarGrafica">Limpiar Gráfica</button> <!-- Nuevo botón -->
+    </div>
+
     <script src="js/script.js"></script>
 </body>
 </html>

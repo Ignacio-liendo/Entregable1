@@ -10,7 +10,8 @@ body {
     background: white;
     padding: 20px;
     margin: 50px auto;
-    width: 300px;
+    width: 90%;
+    max-width: 600px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
@@ -40,13 +41,35 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.mensaje {
-    font-size: 14px;
-    margin-top: 10px;
-    font-weight: bold;
+.chart-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
 }
 
-#nombreInput {
-    display: block;
-    margin: 10px auto;
+.tabla-container {
+    overflow: auto;
+    max-height: 300px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+}
+
+#limpiarHistorial, #limpiarGrafica {
+    margin-top: 10px;
+    background-color: red;
 }
