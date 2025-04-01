@@ -1,82 +1,74 @@
 // Archivo: script.js
 
-// Obtener elementos del DOM
-const nombreSpan = document.getElementById("nombreUsuario");
-const nombreInput = document.getElementById("nombreInput");
-const btnGuardarNombre = document.getElementById("guardarNombre");
-const saldoSpan = document.getElementById("saldo");
-const inputMonto = document.getElementById("monto");
-const btnDepositar = document.getElementById("depositar");
-const btnRetirar = document.getElementById("retirar");
+document.addEventListener("DOMContentLoaded", async () => {
+    const nombreSpan = document.getElementById("nombreUsuario");
+    const nombreInput = document.getElementById("nombreInput");
+    const btnGuardarNombre = document.getElementById("guardarNombre");
+    const saldoSpan = document.getElementById("saldo");
+    const inputMonto = document.getElementById("monto");
+    const btnDepositar = document.getElementById("depositar");
+    const btnRetirar = document.getElementById("retirar");
 
-// Obtener saldo y nombre desde localStorage o valores iniciales
-totalizarSaldo();
-cargarUsuario();
+    let saldo = 0;
+    let nombreUsuario = "";
 
-// Función para obtener y actualizar saldo desde JSON simulado
-async function totalizarSaldo() {
+    // Cargar datos desde JSON
     try {
-        const respuesta = await fetch("data.json");
-        const datos = await respuesta.json();
-        let saldo = Number(localStorage.getItem("saldo")) || datos.saldoInicial;
-        actualizarSaldo(saldo);
+        const response = await fetch("data.json");
+        const data = await response.json();
+        saldo = data.usuario.saldo;
+        nombreUsuario = data.usuario.nombre;
     } catch (error) {
-        console.error("Error al cargar los datos: ", error);
+        console.error("Error al cargar los datos:", error);
     }
-}
 
-// Función para cargar el nombre de usuario
-totalizarSaldo();
-cargarUsuario();
-function cargarUsuario() {
-    let nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
+    // Mostrar datos en pantalla
     nombreSpan.textContent = nombreUsuario;
-    nombreInput.value = nombreUsuario;
-}
-
-// Función para actualizar saldo en pantalla y localStorage
-function actualizarSaldo(saldo) {
     saldoSpan.textContent = `$${saldo.toFixed(2)}`;
-    localStorage.setItem("saldo", saldo.toFixed(2));
-    btnRetirar.disabled = saldo <= 0;
-}
-
-// Guardar el nombre del usuario
-btnGuardarNombre.addEventListener("click", () => {
-    let nombreUsuario = nombreInput.value.trim();
-    if (nombreUsuario) {
-        nombreSpan.textContent = nombreUsuario;
-        localStorage.setItem("nombreUsuario", nombreUsuario);
-        Swal.fire("Nombre guardado con éxito", "", "success");
-    } else {
-        Swal.fire("Ingrese un nombre válido.", "", "error");
+    
+    // Función para actualizar saldo en pantalla
+    function actualizarSaldo() {
+        saldoSpan.textContent = `$${saldo.toFixed(2)}`;
+        btnRetirar.disabled = saldo <= 0;
     }
-});
 
-// Evento para depositar dinero
-btnDepositar.addEventListener("click", () => {
-    let monto = parseFloat(inputMonto.value);
-    if (!isNaN(monto) && monto > 0) {
-        let saldoActual = Number(localStorage.getItem("saldo"));
-        let nuevoSaldo = saldoActual + monto;
-        actualizarSaldo(nuevoSaldo);
-        Swal.fire(`Depósito de $${monto.toFixed(2)} realizado con éxito`, "", "success");
-        inputMonto.value = "";
-    } else {
-        Swal.fire("Ingrese un monto válido.", "", "error");
-    }
-});
+    // Guardar el nombre del usuario
+    btnGuardarNombre.addEventListener("click", () => {
+        const nuevoNombre = nombreInput.value.trim();
+        if (nuevoNombre) {
+            nombreUsuario = nuevoNombre;
+            nombreSpan.textContent = nombreUsuario;
+            Swal.fire("Éxito", "Nombre guardado con éxito", "success");
+        } else {
+            Swal.fire("Error", "Ingrese un nombre válido.", "error");
+        }
+    });
 
-// Evento para retirar dinero
-btnRetirar.addEventListener("click", () => {
-    let monto = parseFloat(inputMonto.value);
-    let saldoActual = Number(localStorage.getItem("saldo"));
-    if (!isNaN(monto) && monto > 0 && monto <= saldoActual) {
-        let nuevoSaldo = saldoActual - monto;
-        actualizarSaldo(nuevoSaldo);
-        Swal.fire(`Retiro de $${monto.toFixed(2)} realizado con éxito`, "", "success");
-        inputMonto.value = "";
-    } else {
-        Swal.fire("Monto no válido o saldo insuficiente.", "", "error");
-    }
+    // Evento para depositar dinero
+    btnDepositar.addEventListener("click", () => {
+        let monto = parseFloat(inputMonto.value);
+        if (!isNaN(monto) && monto > 0) {
+            saldo += monto;
+            actualizarSaldo();
+            Swal.fire("Depósito exitoso", `Se depositaron $${monto.toFixed(2)}`, "success");
+            inputMonto.value = "";
+        } else {
+            Swal.fire("Error", "Ingrese un monto válido.", "error");
+        }
+    });
+
+    // Evento para retirar dinero
+    btnRetirar.addEventListener("click", () => {
+        let monto = parseFloat(inputMonto.value);
+        if (!isNaN(monto) && monto > 0 && monto <= saldo) {
+            saldo -= monto;
+            actualizarSaldo();
+            Swal.fire("Retiro exitoso", `Se retiraron $${monto.toFixed(2)}`, "success");
+            inputMonto.value = "";
+        } else {
+            Swal.fire("Error", "Monto no válido o saldo insuficiente.", "error");
+        }
+    });
+
+    actualizarSaldo();
 });
