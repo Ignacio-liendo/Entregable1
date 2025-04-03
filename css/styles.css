@@ -48,7 +48,7 @@ button:disabled {
 }
 
 .tabla-container {
-    overflow: auto;
+    overflow-x: auto;
     max-height: 300px;
 }
 
@@ -67,6 +67,12 @@ th, td {
 th {
     background-color: #007bff;
     color: white;
+}
+
+@media (max-width: 600px) {
+    button {
+        width: 100%;
+    }
 }
 
 #limpiarHistorial, #limpiarGrafica {

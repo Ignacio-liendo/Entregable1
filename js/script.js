@@ -1,37 +1,55 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     // Elementos del DOM
+    const login = document.getElementById("login");
+    const banco = document.getElementById("banco");
     const nombreSpan = document.getElementById("nombreUsuario");
-    const nombreInput = document.getElementById("nombreInput");
-    const btnGuardarNombre = document.getElementById("guardarNombre");
     const saldoSpan = document.getElementById("saldo");
     const inputMonto = document.getElementById("monto");
-    const btnDepositar = document.getElementById("depositar");
-    const btnRetirar = document.getElementById("retirar");
-    const btnLimpiarHistorial = document.getElementById("limpiarHistorial");
-    const btnLimpiarGrafica = document.getElementById("limpiarGrafica");
     const historialTransacciones = document.getElementById("historialTransacciones");
     const ctx = document.getElementById("saldoChart").getContext("2d");
 
-    let saldo = 0;
-    let nombreUsuario = localStorage.getItem("nombreUsuario") || "Usuario";
-    let historialSaldos = [];
-    let historialFechas = [];
-    let transacciones = JSON.parse(localStorage.getItem("transacciones")) || [];
+    const loginBtn = document.getElementById("loginBtn");
+    const btnDepositar = document.getElementById("depositar");
+    const btnRetirar = document.getElementById("retirar");
+    const btnTransferir = document.getElementById("transferir");
+    const btnPagarServicio = document.getElementById("pagarServicio");
+    const btnLimpiarHistorial = document.getElementById("limpiarHistorial");
+    const btnLimpiarGrafica = document.getElementById("limpiarGrafica");
 
-    // Cargar datos
-    try {
-        const response = await fetch("data.json");
-        const data = await response.json();
-        saldo = localStorage.getItem("saldo") ? parseFloat(localStorage.getItem("saldo")) : data.usuario.saldo;
-    } catch (error) {
-        console.error("Error al cargar los datos:", error);
-        saldo = 1000;
+    // Recuperar datos de localStorage
+    let datos = JSON.parse(localStorage.getItem("banco")) || { saldo: 1000, transacciones: [] };
+    let nombreGuardado = localStorage.getItem("nombreUsuario");
+
+    // Autenticación con PIN
+    loginBtn.addEventListener("click", () => {
+        const nombre = document.getElementById("nombreInput").value.trim();
+        const pin = document.getElementById("pinInput").value.trim();
+
+        if (!nombre || !pin) {
+            return Swal.fire("Error", "Ingrese nombre y PIN.", "error");
+        }
+
+        // Guardar nombre y mostrarlo
+        localStorage.setItem("nombreUsuario", nombre);
+        nombreSpan.textContent = nombre;
+
+        // Mostrar la interfaz bancaria
+        login.classList.add("d-none");
+        banco.classList.remove("d-none");
+
+        saldoSpan.textContent = `$${datos.saldo.toFixed(2)}`;
+        actualizarHistorial();
+    });
+
+    // Mostrar el nombre guardado si existe
+    if (nombreGuardado) {
+        nombreSpan.textContent = nombreGuardado;
     }
 
-    nombreSpan.textContent = nombreUsuario;
-    saldoSpan.textContent = `$${saldo.toFixed(2)}`;
+    // Inicializar gráfica
+    let historialFechas = datos.transacciones.map(t => t.fecha);
+    let historialSaldos = datos.transacciones.map(t => t.saldo);
 
-    // Crear gráfico
     let saldoChart = new Chart(ctx, {
         type: "line",
         data: {
@@ -47,9 +65,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
+    // Función para actualizar historial
     function actualizarHistorial() {
         historialTransacciones.innerHTML = "";
-        transacciones.forEach(t => {
+        datos.transacciones.forEach(t => {
             let row = `<tr>
                 <td>${t.fecha}</td>
                 <td>${t.tipo}</td>
@@ -58,15 +77,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             </tr>`;
             historialTransacciones.innerHTML += row;
         });
-        localStorage.setItem("transacciones", JSON.stringify(transacciones));
+        localStorage.setItem("banco", JSON.stringify(datos));
     }
 
+    // Función para actualizar saldo y gráfica
     function actualizarSaldo() {
-        saldoSpan.textContent = `$${saldo.toFixed(2)}`;
-        btnRetirar.disabled = saldo <= 0;
+        saldoSpan.textContent = `$${datos.saldo.toFixed(2)}`;
 
         historialFechas.push(new Date().toLocaleTimeString());
-        historialSaldos.push(saldo);
+        historialSaldos.push(datos.saldo);
 
         if (historialFechas.length > 10) {
             historialFechas.shift();
@@ -78,16 +97,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         saldoChart.update();
     }
 
+    // Función para realizar transacciones
     function realizarTransaccion(tipo, monto) {
         if (!isNaN(monto) && monto > 0) {
-            if (tipo === "Retiro" && monto > saldo) {
+            if (tipo === "Retiro" && monto > datos.saldo) {
                 return Swal.fire("Error", "Saldo insuficiente.", "error");
             }
 
-            saldo = tipo === "Depósito" ? saldo + monto : saldo - monto;
-            localStorage.setItem("saldo", saldo);
+            datos.saldo = tipo === "Depósito" ? datos.saldo + monto : datos.saldo - monto;
+            localStorage.setItem("banco", JSON.stringify(datos));
 
-            transacciones.push({ fecha: new Date().toLocaleString(), tipo, monto, saldo });
+            datos.transacciones.push({
+                fecha: new Date().toLocaleString(),
+                tipo,
+                monto,
+                saldo: datos.saldo
+            });
+
             actualizarSaldo();
             actualizarHistorial();
         } else {
@@ -95,22 +121,74 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    // Función para transferir dinero
+    btnTransferir.addEventListener("click", () => {
+        Swal.fire({
+            title: "Transferencia de Dinero",
+            input: "number",
+            inputLabel: "Ingrese el monto a transferir",
+            inputPlaceholder: "Ejemplo: 500",
+            showCancelButton: true,
+            confirmButtonText: "Transferir",
+            preConfirm: (monto) => {
+                monto = parseFloat(monto);
+                if (isNaN(monto) || monto <= 0) {
+                    Swal.showValidationMessage("Ingrese un monto válido.");
+                } else if (monto > datos.saldo) {
+                    Swal.showValidationMessage("Saldo insuficiente.");
+                }
+                return monto;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                realizarTransaccion("Transferencia", result.value);
+                Swal.fire("¡Éxito!", `Se ha transferido $${result.value}`, "success");
+            }
+        });
+    });
+
+    // Función para pagar servicio
+    btnPagarServicio.addEventListener("click", () => {
+        Swal.fire({
+            title: "Pago de Servicio",
+            input: "number",
+            inputLabel: "Ingrese el monto a pagar",
+            inputPlaceholder: "Ejemplo: 300",
+            showCancelButton: true,
+            confirmButtonText: "Pagar",
+            preConfirm: (monto) => {
+                monto = parseFloat(monto);
+                if (isNaN(monto) || monto <= 0) {
+                    Swal.showValidationMessage("Ingrese un monto válido.");
+                } else if (monto > datos.saldo) {
+                    Swal.showValidationMessage("Saldo insuficiente.");
+                }
+                return monto;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                realizarTransaccion("Pago de Servicio", result.value);
+                Swal.fire("¡Pago realizado!", `Se ha pagado $${result.value}`, "success");
+            }
+        });
+    });
+
+    // Eventos de botones
     btnDepositar.addEventListener("click", () => realizarTransaccion("Depósito", parseFloat(inputMonto.value)));
     btnRetirar.addEventListener("click", () => realizarTransaccion("Retiro", parseFloat(inputMonto.value)));
     btnLimpiarHistorial.addEventListener("click", () => {
-        localStorage.removeItem("transacciones");
-        transacciones = [];
+        datos.transacciones = [];
+        localStorage.setItem("banco", JSON.stringify(datos));
         actualizarHistorial();
     });
     btnLimpiarGrafica.addEventListener("click", () => {
-        historialFechas.length = 0; // Vaciar el array correctamente
+        historialFechas.length = 0;
         historialSaldos.length = 0;
-        
         saldoChart.data.labels = [];
         saldoChart.data.datasets[0].data = [];
-        
-        saldoChart.update(); // Actualizar la gráfica
-    });    
+        saldoChart.update();
+    });
+
     actualizarSaldo();
     actualizarHistorial();
 });
